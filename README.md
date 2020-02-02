@@ -1,23 +1,20 @@
-**commandlock - Atomic locking for commands**
 
 https://github.com/jakeogh/commandlock
 
-Prevent identical commands from executing concurrently.
+## commandlock - Advisory locking for processes launching
 
-A command is the combination of the program and it's arguments: $0 $*
+Prevent identical commands with identical arguments from executing concurrently.
 
-Requires: sh, sha1sum
 
 **Theory:**
 
- 1. Generate unique and reproducible string from $0 $* (the script name and all it's arguments). sha1sum($0 $*) is used.
- 2. Obtain an atomic* lock using the filesystem. Exit on failure (since the same command is already running).
+ 1. Generate unique and reproducible string from `$0 $*` (the script name and all it's arguments). `sha1sum($0 $*)` is used.
+ 2. Obtain an atomic`*` lock using the filesystem. Exit on failure (since the same command is already running).
+ 3. Execute code, any attempts to execute the same command should fail.
+ 4. Release the lock by deleting the lockfile (this is done with a `trap`).
+ 5. Exit.
 
-        _At this point, executing the same command (which also uses this script) should fail._
-
- 4. Delete the lockfile on exit.
-
-* filesystem/kernel dependent
+`*` filesystem/kernel dependent
 
 **General Install:**
 
@@ -65,12 +62,14 @@ or to use it to only lock a specific section of a script, insert:
 _before_ the critical section in the parent script. The lock is removed via the trap when the parent script terminates.
 
 
-This script should have no effect on the parent script other than locking. The variable names are set readonly to prevent collisions with names in the parent script. The set commands are done in subshells so we don't need to save and restore state.
+Sourcing `commandlock` should have no effect on the parent script other than locking.
+- The variable names are set readonly to prevent collisions with names in the parent script.
+- The set commands are done in subshells so there is no state to save and restore.
 
 **Design notes:**
 
-- Attempts to be strictly POSIX compliant.
-- Does not depend on bash specific features.
+- Attempts to be POSIX compliant.
+- Does not depend on bash-specific features.
 - Redirection using noclobber is the atomic locking primitive instead of mkdir because it's faster.
 
 **Benchmark mkdir vs noclobber:**
@@ -84,9 +83,14 @@ $ time for x in {1..24000} ; do set -o noclobber; :> lock ; /usr/bin/unlink lock
 - If the trap is re-defined in the parent script, that trap will need to handle deleting the lock.
 - The lockfile is orphaned if an exit signal happens after the lock is obtained and before the trap is set.
 
+**Requires:**
+
+ - sh
+ - sha1sum
+
 **More info:**
 
- - man flock
+ - `man flock`
  - http://www.davidpashley.com/articles/writing-robust-shell-scripts.html
  - http://wiki.bash-hackers.org/howto/mutex
  - http://mywiki.wooledge.org/BashFAQ/045
@@ -98,3 +102,4 @@ $ time for x in {1..24000} ; do set -o noclobber; :> lock ; /usr/bin/unlink lock
  - http://apenwarr.ca/log/?m=201012#13
  - https://news.ycombinator.com/item?id=2000349
  - https://github.com/WoLpH/portalocker
+ - https://news.ycombinator.com/item?id=22212338
