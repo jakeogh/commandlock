@@ -16,6 +16,13 @@ Prevent identical commands with identical arguments from executing concurrently.
 
 `*` filesystem/kernel dependent
 
+
+**Files:**
+- `lock`: bash-specific shell script to launch a process with `commandlock`
+- `commandlock`: advisory locking code, only used by `source`
+- `commandlock-test`: test script
+
+
 **General Install:**
 
 Place in $PATH
@@ -69,8 +76,8 @@ Sourcing `commandlock` should have no effect on the parent script other than loc
 **Design notes:**
 
 - Attempts to be POSIX compliant.
-- Does not depend on bash-specific features.
-- Redirection using noclobber is the atomic locking primitive instead of mkdir because it's faster.
+- Locking code in `commandlock` does not depend on bash-specific features.
+- Redirection using `-o noclobber` is the atomic locking primitive instead of `mkdir` because it's faster.
 
 **Benchmark mkdir vs noclobber:**
 ```
