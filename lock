@@ -17,5 +17,5 @@ main()
 
 unset BASH_SOURCE 2> /dev/null
 test ".$0" != ".$BASH_SOURCE" && \
-    { echo "Do not source /usr/bin/lock, use /usr/bin/commandlock"; exit 1 ; } \
+    { echo "Do not \`source /usr/bin/lock\`, use \`source /usr/bin/commandlock\` instead."; exit 1 ; } \
     || main "$@"
