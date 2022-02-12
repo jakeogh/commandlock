@@ -9,17 +9,17 @@ Prevent identical commands with identical arguments from executing concurrently.
 **Theory:**
 
  1. Generate unique and reproducible string from `$0 $*` (the script name and all it's arguments). `sha1sum($0 $*)` is used.
- 2. Obtain an atomic`*` lock using the filesystem. Exit on failure (since the same command is already running).
+ 2. Obtain an atomic* lock using the filesystem. Exit on failure (since the same command is already running).
  3. Execute code, any attempts to execute the same command should fail.
  4. Release the lock by deleting the lockfile (this is done with a `trap`).
  5. Exit.
 
-`*` filesystem/kernel dependent
+`* filesystem and kernel dependent`
 
 
 **Files:**
 - `lock`: bash-specific shell script to launch a process with `commandlock`
-- `commandlock`: advisory locking code, only used by `source`
+- `commandlock`: advisory locking code, only used by sourcing, see `lock` for example
 - `commandlock-test`: test script
 
 
@@ -44,11 +44,27 @@ Place in $PATH
 
 **Use:**
 
+
+Dont `factor` twice:
+```
+$ lock time factor `printf "%0.s7" {1..29}` & lock time factor `printf "%0.s7" {1..29}`
+[1] 15549
+ERROR: [15549] /usr/bin/lock time factor 77777777777777777777777777777 Locking failed: /dev/shm/commandlock_185c131569abe83db71f5af0d51e3cdba09c0f85
+ERROR: [15549] /usr/bin/lock time factor 77777777777777777777777777777 is/was already running. Exiting (1).
+77777777777777777777777777777: 7 3191 16763 43037 62003 77843839397
+0.00user 0.00system 0:00.00elapsed 95%CPU (0avgtext+0avgdata 2064maxresident)k
+0inputs+0outputs (0major+94minor)pagefaults 0swaps
+[1]+  Exit 1                  lock time factor `printf "%0.s7" {1..29}`
+```
+
+
+Make sure a `wget` job is unique:
 ```
 $ lock wget http://www.wrh.noaa.gov/images/twc/granalyst/kemx_cr_0.jpg
 ```
 
-deliberately attempting to run the same command at the same time:
+
+Example deliberately attempting to run the same command at the same time, like the `factor` example:
 ```
 $ lock curl https://www.wrh.noaa.gov/images/twc/granalyst/kemx_cr_0.jpg -o /dev/null & lock curl https://www.wrh.noaa.gov/images/twc/granalyst/kemx_cr_0.jpg -o /dev/null
 [1] 26842
@@ -64,7 +80,7 @@ ERROR: [26842] /usr/bin/lock curl https://www.wrh.noaa.gov/images/twc/granalyst/
 
 or to use it to only lock a specific section of a script, insert:
 ```
-. /usr/bin/commandlock || exit 1
+. commandlock || exit 1
 ```
 _before_ the critical section in the parent script. The lock is removed via the trap when the parent script terminates.
 
