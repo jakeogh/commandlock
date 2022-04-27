@@ -25,7 +25,7 @@ Prevent identical commands with identical arguments from executing concurrently.
 
 **General Install:**
 
-Place in $PATH
+Place in `$PATH`
 
 ```
     git clone https://github.com/jakeogh/commandlock
@@ -42,7 +42,7 @@ Place in $PATH
    emerge commandlock
 ```
 
-**Use:**
+###Usage:
 
 
 Dont `factor` twice:
