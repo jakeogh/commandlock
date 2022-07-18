@@ -25,7 +25,16 @@ if [ ! -d "${lock_folder_cl}" ]; then  # todo: add test for this
     exit 1
 fi
 
-lock_name_cl=$(printf '%s\0' "$0" "$@" | sha1sum -) || {
+# this locking scheme only supports the case where the last item in $@ is the path
+# that is getting locked
+# without resoving the final path, relative paths generate different hashes
+arg_array=( "$@" )
+readlink_result=$(readlink -f "${arg_array[-1]}")
+arg_array[-1]="${readlink_result}"
+printf -v joined_arg_array '/%s' "${arg_array[@]}"
+#echo "${joined_arg_array}"
+
+lock_name_cl=$(printf '%s\0' "$0" "${joined_arg_array}" | sha1sum -) || {
     printf >&2 'ERROR: [%s] %s %s generating lock filename with sha1sum.\n' "$$" "$0" "$*"
     exit 1
 }
