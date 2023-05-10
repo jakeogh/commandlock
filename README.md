@@ -42,7 +42,7 @@ Place in `$PATH`
    emerge commandlock
 ```
 
-###Usage:
+**Usage:**
 
 
 Dont `factor` twice:
@@ -126,3 +126,4 @@ $ time for x in {1..24000} ; do set -o noclobber; :> lock ; /usr/bin/unlink lock
  - https://news.ycombinator.com/item?id=2000349
  - https://github.com/WoLpH/portalocker
  - https://news.ycombinator.com/item?id=22212338
+ - https://news.ycombinator.com/item?id=35881520
